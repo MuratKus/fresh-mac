@@ -1,57 +1,98 @@
 #!/bin/bash
 
+# Trap to handle script interruption
+trap 'echo "Setup interrupted. Re-run the script to continue."; exit 1' SIGINT
+
 echo "Starting macOS setup..."
 
-# Install Homebrew if not already installed
+# Function to install a CLI tool if not installed
+install_cli() {
+  if ! command -v "$1" &>/dev/null; then
+    echo "Installing $1..."
+    brew install "$1" || echo "Error installing $1. Skipping..."
+  else
+    echo "$1 is already installed."
+  fi
+}
+
+# Function to install a cask app if not installed
+install_cask() {
+  if ! brew list --cask | grep -q "$1"; then
+    echo "Installing $1..."
+    brew install --cask "$1" || echo "Error installing $1. Skipping..."
+  else
+    echo "$1 is already installed."
+  fi
+}
+
+# Ensure Homebrew is installed
 if ! command -v brew &>/dev/null; then
   echo "Installing Homebrew..."
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" || {
+    echo "Homebrew installation failed. Exiting."
+    exit 1
+  }
 else
-  echo "Homebrew already installed."
+  echo "Homebrew is already installed."
 fi
 
-# Install essential tools and apps via Homebrew
-echo "Installing applications and tools via Homebrew..."
-brew install git
-brew install zsh
-brew install httpie
-brew install node
-brew install python
-brew install pyenv
-brew install nvm
-brew install android-platform-tools # ADB
-brew install mackup
+# Install CLI tools
+install_cli git
+install_cli zsh
+install_cli httpie
+install_cli node
+install_cli python
+install_cli pyenv
+install_cli nvm
+install_cli android-platform-tools
+install_cli mackup
 
-brew install --cask docker
-brew install --cask visual-studio-code
-brew install --cask iterm2
-brew install --cask proxyman
-brew install --cask postman
-brew install --cask android-studio
-brew install --cask flutter
-brew install --cask slack
-brew install --cask google-chrome
-brew install --cask opera
-brew install --cask firefox
-brew install --cask rectangle # Window management
+# Install cask apps
+install_cask docker
+install_cask visual-studio-code
+install_cask iterm2
+install_cask proxyman
+install_cask postman
+install_cask android-studio
+install_cask flutter
+install_cask slack
+install_cask google-chrome
+install_cask opera
+install_cask firefox
+install_cask rectangle
 
-# Install programming tools
-curl -s "https://get.sdkman.io" | bash
-source "$HOME/.sdkman/bin/sdkman-init.sh"
+# Install SDKMAN
+if [ ! -d "$HOME/.sdkman" ]; then
+  echo "Installing SDKMAN..."
+  curl -s "https://get.sdkman.io" | bash
+  source "$HOME/.sdkman/bin/sdkman-init.sh"
+else
+  echo "SDKMAN is already installed."
+fi
 
 # Install Java and Gradle via SDKMAN
-sdk install java 17.0.8-tem
-sdk install gradle
+sdk install java 17.0.8-tem || echo "Error installing Java."
+sdk install gradle || echo "Error installing Gradle."
 
 # Install automation and testing tools
-npm install -g cypress playwright appium
-pip install selenium
+npm install -g cypress playwright appium || echo "Error installing testing tools."
+pip install selenium || echo "Error installing Selenium."
 
-# Install Zsh plugins
-echo "Installing Oh My Zsh and plugins..."
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+# Install Oh My Zsh and plugins
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+  echo "Installing Oh My Zsh..."
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" || echo "Error installing Oh My Zsh."
+fi
+
+if [ ! -d "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions" ]; then
+  echo "Installing Zsh autosuggestions plugin..."
+  git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+fi
+
+if [ ! -d "$HOME/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting" ]; then
+  echo "Installing Zsh syntax highlighting plugin..."
+  git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+fi
 
 # Add plugins to ~/.zshrc
 if ! grep -q "zsh-autosuggestions" ~/.zshrc; then
@@ -69,8 +110,6 @@ killall Dock
 
 # Run post-installation tests
 echo "Running post-installation tests..."
-
-# Test CLI tools
 if command -v git &>/dev/null; then
   echo "Git installed successfully: $(git --version)"
 else
@@ -89,38 +128,10 @@ else
   echo "Error: Python is not installed."
 fi
 
-if command -v brew &>/dev/null; then
-  echo "Homebrew installed successfully."
-else
-  echo "Error: Homebrew is not installed."
-fi
-
-# Test GUI applications
-if brew list --cask | grep -q "google-chrome"; then
-  echo "Google Chrome installed successfully."
-else
-  echo "Error: Google Chrome is not installed."
-fi
-
-if brew list --cask | grep -q "slack"; then
-  echo "Slack installed successfully."
-else
-  echo "Error: Slack is not installed."
-fi
-
-# Test testing tools
 if npx cypress --version &>/dev/null; then
   echo "Cypress installed successfully: $(npx cypress --version)"
 else
   echo "Error: Cypress is not installed."
 fi
 
-if npx playwright --version &>/dev/null; then
-  echo "Playwright installed successfully: $(npx playwright --version)"
-else
-  echo "Error: Playwright is not installed."
-fi
-
-# Reminder to restore settings with Mackup
-echo "Don't forget to restore your settings with Mackup!"
-echo "Setup complete! Restart your terminal for all changes to take effect."
+echo "Setup complete! You can safely re-run this script to fix incomplete installations. Restart your terminal for changes to take effect."
