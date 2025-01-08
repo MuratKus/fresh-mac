@@ -55,6 +55,7 @@ install_cask docker
 install_cask visual-studio-code
 install_cask iterm2
 install_cask proxyman
+install_cask sublime-text
 install_cask postman
 install_cask android-studio
 install_cask flutter
@@ -72,14 +73,28 @@ if [ ! -d "$HOME/.sdkman" ]; then
   source "$HOME/.sdkman/bin/sdkman-init.sh"
 else
   echo "SDKMAN is already installed."
+  source "$HOME/.sdkman/bin/sdkman-init.sh"
 fi
 
-# Install Java and Gradle via SDKMAN
-sdk install java 17.0.8-tem || echo "Error installing Java."
-sdk install gradle || echo "Error installing Gradle."
+# Ensure SDKMAN works before installing Java and Gradle
+if command -v sdk &>/dev/null; then
+  sdk install java 17.0.8-tem || echo "Error installing Java."
+  sdk install gradle || echo "Error installing Gradle."
+else
+  echo "Error: SDKMAN installation failed or sdk command not found."
+fi
 
 # Install automation and testing tools
 npm install -g cypress playwright appium || echo "Error installing testing tools."
+
+# Ensure pip is available for Python 3
+if ! command -v pip &>/dev/null; then
+  echo "Installing pip for Python..."
+  curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+  python3 get-pip.py || echo "Error installing pip."
+  rm get-pip.py
+fi
+
 pip install selenium || echo "Error installing Selenium."
 
 # Install Oh My Zsh and plugins
@@ -108,6 +123,7 @@ fi
 echo "Applying macOS system preferences..."
 defaults write com.apple.finder AppleShowAllFiles -bool true
 defaults write com.apple.dock tilesize -int 36
+defaults write com.apple.dock autohide -bool true
 killall Finder
 killall Dock
 
