@@ -65,6 +65,21 @@ install_cask opera
 install_cask firefox
 install_cask rectangle
 install_cask dbeaver-community
+install_cask mactex
+
+# Configure PATH for LaTeX
+if ! echo "$PATH" | grep -q "/Library/TeX/texbin"; then
+  echo "Adding LaTeX to PATH..."
+  export PATH="/Library/TeX/texbin:$PATH"
+  echo 'export PATH="/Library/TeX/texbin:$PATH"' >> ~/.zshrc
+fi
+
+# Test LaTeX installation
+if command -v pdflatex &>/dev/null; then
+  echo "LaTeX installed successfully: $(pdflatex --version | head -n 1)"
+else
+  echo "Error: LaTeX is not installed."
+fi
 
 # Install SDKMAN
 if [ ! -d "$HOME/.sdkman" ]; then
