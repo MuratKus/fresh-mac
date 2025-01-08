@@ -65,16 +65,18 @@ install_cask opera
 install_cask firefox
 install_cask rectangle
 install_cask dbeaver-community
-install_cask mactex
 
-# Configure PATH for LaTeX
-if ! echo "$PATH" | grep -q "/Library/TeX/texbin"; then
-  echo "Adding LaTeX to PATH..."
+# Install BasicTeX for LaTeX
+if ! command -v pdflatex &>/dev/null; then
+  echo "Installing BasicTeX (LaTeX CLI)..."
+  brew install --cask basictex
   export PATH="/Library/TeX/texbin:$PATH"
   echo 'export PATH="/Library/TeX/texbin:$PATH"' >> ~/.zshrc
+else
+  echo "LaTeX is already installed: $(pdflatex --version | head -n 1)"
 fi
 
-# Test LaTeX installation
+# Verify LaTeX installation
 if command -v pdflatex &>/dev/null; then
   echo "LaTeX installed successfully: $(pdflatex --version | head -n 1)"
 else
@@ -102,15 +104,15 @@ fi
 # Install automation and testing tools
 npm install -g cypress playwright appium || echo "Error installing testing tools."
 
-# Ensure pip is available for Python 3
-if ! command -v pip &>/dev/null; then
-  echo "Installing pip for Python..."
-  curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-  python3 get-pip.py || echo "Error installing pip."
-  rm get-pip.py
+# Use pipx for Python tools
+if ! command -v pipx &>/dev/null; then
+  echo "Installing pipx for Python package management..."
+  brew install pipx
+  pipx ensurepath
 fi
 
-pip install selenium || echo "Error installing Selenium."
+# Install Selenium with pipx
+pipx install selenium || echo "Error installing Selenium with pipx."
 
 # Install Oh My Zsh and plugins
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
