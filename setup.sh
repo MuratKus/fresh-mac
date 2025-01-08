@@ -123,7 +123,6 @@ fi
 echo "Applying macOS system preferences..."
 defaults write com.apple.finder AppleShowAllFiles -bool true
 defaults write com.apple.dock tilesize -int 36
-defaults write com.apple.dock autohide -bool true
 killall Finder
 killall Dock
 
