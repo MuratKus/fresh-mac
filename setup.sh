@@ -44,8 +44,11 @@ install_cli node
 install_cli python
 install_cli pyenv
 install_cli nvm
-install_cli android-platform-tools
+install_cli android-platform-tools # ADB
 install_cli mackup
+install_cli k9s
+install_cli k6
+install_cli jmeter
 
 # Install cask apps
 install_cask docker
@@ -60,6 +63,7 @@ install_cask google-chrome
 install_cask opera
 install_cask firefox
 install_cask rectangle
+install_cask dbeaver-community
 
 # Install SDKMAN
 if [ ! -d "$HOME/.sdkman" ]; then
@@ -104,7 +108,6 @@ fi
 echo "Applying macOS system preferences..."
 defaults write com.apple.finder AppleShowAllFiles -bool true
 defaults write com.apple.dock tilesize -int 36
-defaults write com.apple.dock autohide -bool true
 killall Finder
 killall Dock
 
@@ -132,6 +135,12 @@ if npx cypress --version &>/dev/null; then
   echo "Cypress installed successfully: $(npx cypress --version)"
 else
   echo "Error: Cypress is not installed."
+fi
+
+if brew list --cask | grep -q "dbeaver-community"; then
+  echo "DBeaver installed successfully."
+else
+  echo "Error: DBeaver is not installed."
 fi
 
 echo "Setup complete! You can safely re-run this script to fix incomplete installations. Restart your terminal for changes to take effect."
