@@ -65,15 +65,13 @@ install_cask opera
 install_cask firefox
 install_cask rectangle
 install_cask dbeaver-community
+install_cask mactex
 
-# Install BasicTeX for LaTeX
-if ! command -v pdflatex &>/dev/null; then
-  echo "Installing BasicTeX (LaTeX CLI)..."
-  brew install --cask basictex
+# Configure PATH for LaTeX (MacTeX)
+if ! echo "$PATH" | grep -q "/Library/TeX/texbin"; then
+  echo "Adding LaTeX to PATH..."
   export PATH="/Library/TeX/texbin:$PATH"
   echo 'export PATH="/Library/TeX/texbin:$PATH"' >> ~/.zshrc
-else
-  echo "LaTeX is already installed: $(pdflatex --version | head -n 1)"
 fi
 
 # Verify LaTeX installation
